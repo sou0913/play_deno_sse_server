@@ -72,9 +72,7 @@ async function handler(requestEvent: Deno.RequestEvent) {
 
         await requestEvent.respondWith(new Response(null, { status: 204 }));
     } else if (url.pathname == "/" && req.method == "GET") {
-        const file = await Deno.open("./index.html");
-        const stream = readableStreamFromReader(file);
-
-        await requestEvent.respondWith(new Response(stream));
+        const file = await Deno.readFile("./index.html");
+        await requestEvent.respondWith(new Response(file));
     }
 }
