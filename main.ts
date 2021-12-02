@@ -1,7 +1,5 @@
 // curl localhost:8080 --verbose --no-buffer
 
-import { readableStreamFromReader } from "https://deno.land/std@0.116.0/streams/mod.ts";
-
 let db: string = "";
 let subscribers: Notifiable[] = [];
 
@@ -17,7 +15,7 @@ function add(val: string) {
     }
 }
 
-for await (const conn of Deno.listen({ port: 8080 })) {
+for await (const conn of Deno.listen({ port: 3000 })) {
     (async () => {
         const httpConn = Deno.serveHttp(conn);
         for await (const requestEvent of httpConn) {
@@ -56,6 +54,7 @@ async function handler(requestEvent: Deno.RequestEvent) {
                         "Cache-Control": "no-cache",
                         "Connection": "keep-alive",
                         "Content-Type": "text/event-stream",
+                        "Access-Control-Allow-Origin": "*",
                     },
                 })
             );
@@ -65,14 +64,26 @@ async function handler(requestEvent: Deno.RequestEvent) {
             subscribers = [];
             console.log("subscribers: ", subscribers);
         }
+    } else if (url.pathname == "/status" && req.method == "OPTIONS") {
+        await requestEvent.respondWith(new Response(null, {
+            status: 204,
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Max-Age": "86400",
+            }
+        }))
     } else if (url.pathname == "/status" && req.method == "POST") {
         const data = await req.json();
         console.log(data);
         add(data.status);
 
-        await requestEvent.respondWith(new Response(null, { status: 204 }));
-    } else if (url.pathname == "/" && req.method == "GET") {
-        const file = await Deno.readFile("./index.html");
-        await requestEvent.respondWith(new Response(file));
+        await requestEvent.respondWith(new Response(null, {
+            status: 204,
+            headers: {
+                "Access-Control-Allow-Origin": "*"
+            }
+        }));
     }
 }

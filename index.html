@@ -34,7 +34,9 @@
         <button type="submit">Send</button>
     </form>
     <script>
-        const source = new EventSource('/status');
+        const baseUrl = 'http://localhost:3000';
+
+        const source = new EventSource(`${baseUrl}/status`);
         source.onopen = function (e) {
             console.log("client-onopen")
             console.log(e.data)
@@ -52,7 +54,7 @@
 
             const value = document.getElementById("status").value;
 
-            const response = await fetch('/status', {
+            const response = await fetch(`${baseUrl}/status`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
