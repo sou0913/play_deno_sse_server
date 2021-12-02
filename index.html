@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        http-equiv="X-UA-Compatible"
+        content="IE=edge"
+    >
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>Document</title>
+    <style>
+        body {
+            font-weight: 200;
+        }
+    </style>
+</head>
+
+<body>
+    <form
+        id="form"
+        action="/status"
+        method="POST"
+    >
+        <input
+            id="status"
+            type="text"
+            name="status"
+            placeholder="status"
+        >
+        <button type="submit">Send</button>
+    </form>
+    <script>
+        const source = new EventSource('/status');
+        source.onopen = function (e) {
+            console.log("client-onopen")
+            console.log(e.data)
+        }
+        source.addEventListener('change-status', function (e) {
+            console.log("client-onmessage")
+            console.log(e.data);
+        })
+
+        const form = document.getElementById("form");
+        form.addEventListener('submit', handleSubmit)
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            const value = document.getElementById("status").value;
+
+            const response = await fetch('/status', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: value }),
+            })
+
+            console.log("POST response: ", response);
+        }
+    </script>
+</body>
+
+</html>
